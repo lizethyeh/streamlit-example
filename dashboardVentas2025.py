@@ -38,6 +38,6 @@ fig_profit = px.bar(top_5_products_by_profit,
 fig_profit.update_layout(xaxis = dict(tickangle = -45,
                                 tickfont = dict(size=10),
                                 automargin=True),
-                  xaxis_tickformat = '<br>'.join(['%s' % i for i in top_5_products_by_profit.index]))
+                  xaxis_tickformat = '<br>'.join(['%s' % i for i in top_5_products_by_profit.index.str.wrap(20)])) # Modified to wrap in 2 lines
 
 st.plotly_chart(fig_profit)
