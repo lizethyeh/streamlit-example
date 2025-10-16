@@ -32,6 +32,14 @@ if selected_state == 'Todos':
 else:
     filtered_df = filtered_df_region[filtered_df_region['State'] == selected_state]
 
+# Checkbox to show/hide DataFrame
+show_dataframe = st.sidebar.checkbox('Show Filtered Data')
+
+# Display filtered DataFrame if checkbox is checked
+if show_dataframe:
+    st.subheader('Filtered Data')
+    st.dataframe(filtered_df)
+
 
 # --- GRÁFICA DE VENTAS ---
 # Calcular ventas totales por producto para la región/estado seleccionada
