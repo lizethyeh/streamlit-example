@@ -5,7 +5,7 @@ import plotly.express as px
 st.title('Product Sales and Profit Analysis')
 
 # Read the data
-excel_file_path = 'Order Central Limpio ENTREGABLE.xlsx'
+excel_file_path = '/content/drive/MyDrive/Herramientas Datos/Order Central Limpio ENTREGABLE.xlsx'
 df_order_central = pd.read_excel(excel_file_path)
 
 # Calculate total sales per product
@@ -33,7 +33,7 @@ top_5_products_by_profit = sorted_products_by_profit.head(5)
 
 # Create profit bar chart
 fig_profit = px.bar(top_5_products_by_profit,
-                    x=top_5_products_by_5_products_by_profit.index,
+                    x=top_5_products_by_profit.index,  # Corrected typo here
                     y=top_5_products_by_profit.values,
                     title='Top 5 Most Profitable Products',
                     labels={'x': 'Product Name', 'y': 'Total Profit'})
