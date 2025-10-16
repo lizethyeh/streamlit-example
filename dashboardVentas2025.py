@@ -10,8 +10,18 @@ excel_file_path = 'Order Central Limpio ENTREGABLE.xlsx'
 df_order_central = pd.read_excel(excel_file_path)
 
 # Convert date columns to datetime
-df_order_central['Order Date'] = pd.to_datetime(df_order_central['Order Date'], errors='coerce')
-df_order_central['Ship Date'] = pd.to_datetime(df_order_central['Ship Date'], errors='coerce')
+# Extract numeric part from the string and convert to float
+df_order_central['Order Date'] = df_order_central['Order Date'].astype(str).str.extract('(\d+)').astype(float)
+df_order_central['Ship Date'] = df_order_central['Ship Date'].astype(str).str.extract('(\d+)').astype(float)
+
+# Convert the numeric part to Timedelta
+df_order_central['Order Date'] = pd.to_timedelta(df_order_central['Order Date'], unit='D', errors='coerce')
+df_order_central['Ship Date'] = pd.to_timedelta(df_order_central['Ship Date'], unit='D', errors='coerce')
+
+# Add the Timedelta to the Excel epoch
+excel_epoch = pd.Timestamp('1900-01-01')
+df_order_central['Order Date'] = excel_epoch + df_order_central['Order Date']
+df_order_central['Ship Date'] = excel_epoch + df_order_central['Ship Date']
 
 
 # Sidebar for filters
