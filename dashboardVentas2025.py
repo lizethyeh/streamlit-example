@@ -13,7 +13,7 @@ total_sales_per_product = df_order_central.groupby('Product Name')['Sales'].sum(
 sorted_products_by_sales = total_sales_per_product.sort_values(ascending=False)
 top_5_products = sorted_products_by_sales.head(5)
 
-# Manually wrap product names for sales chart
+# Manually wrap product names for sales chart to display on two lines
 wrapped_sales_product_names = top_5_products.index.str.wrap(20)
 
 # Create sales bar chart
@@ -31,13 +31,12 @@ total_profit_per_product = df_order_central.groupby('Product Name')['Profit'].su
 sorted_products_by_profit = total_profit_per_product.sort_values(ascending=False)
 top_5_products_by_profit = sorted_products_by_profit.head(5)
 
-# Manually wrap product names for profit chart
+# Manually wrap product names for profit chart to display on two lines
 wrapped_profit_product_names = top_5_products_by_profit.index.str.wrap(20)
-
 
 # Create profit bar chart
 fig_profit = px.bar(top_5_products_by_profit,
-                    x=wrapped_profit_product_names, # Use wrapped names here
+                    x=wrapped_profit_product_names,  # Use wrapped names here
                     y=top_5_products_by_profit.values,
                     title='Top 5 Most Profitable Products',
                     labels={'x': 'Product Name', 'y': 'Total Profit'})
