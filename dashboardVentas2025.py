@@ -5,7 +5,7 @@ import plotly.express as px
 st.title('Product Sales and Profit Analysis')
 
 # Read the data
-excel_file_path = '/content/drive/MyDrive/Herramientas Datos/Order Central Limpio ENTREGABLE.xlsx'
+excel_file_path = 'Order Central Limpio ENTREGABLE.xlsx'
 df_order_central = pd.read_excel(excel_file_path)
 
 # Calculate total sales per product
