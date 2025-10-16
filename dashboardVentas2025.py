@@ -9,6 +9,11 @@ st.title('Product Sales and Profit Analysis by Region and State')
 excel_file_path = 'Order Central Limpio ENTREGABLE.xlsx'
 df_order_central = pd.read_excel(excel_file_path)
 
+# Convert date columns to datetime
+df_order_central['Order Date'] = pd.to_datetime(df_order_central['Order Date'], errors='coerce')
+df_order_central['Ship Date'] = pd.to_datetime(df_order_central['Ship Date'], errors='coerce')
+
+
 # Sidebar for filters
 st.sidebar.header('Filter by Region and State')
 
