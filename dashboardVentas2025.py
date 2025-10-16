@@ -22,7 +22,7 @@ fig_sales = px.bar(top_5_products,
 fig_sales.update_layout(xaxis = dict(tickangle = -45,
                                 tickfont = dict(size=10),
                                 automargin=True),
-                  xaxis_tickformat = '<br>'.join(['%s' % i for i in top_5_products.index.str.wrap(20)])) # Modified to wrap in 2 lines
+                  xaxis_tickformat = '<br>'.join(['%s' % i for i in top_5_products.index.str.wrap(20)])) # Apply wrapping to sales chart
 
 st.plotly_chart(fig_sales)
 
@@ -33,7 +33,7 @@ top_5_products_by_profit = sorted_products_by_profit.head(5)
 
 # Create profit bar chart
 fig_profit = px.bar(top_5_products_by_profit,
-                    x=top_5_products_by_profit.index,
+                    x=top_5_products_by_5_products_by_profit.index,
                     y=top_5_products_by_profit.values,
                     title='Top 5 Most Profitable Products',
                     labels={'x': 'Product Name', 'y': 'Total Profit'})
@@ -41,6 +41,6 @@ fig_profit = px.bar(top_5_products_by_profit,
 fig_profit.update_layout(xaxis = dict(tickangle = -45,
                                 tickfont = dict(size=10),
                                 automargin=True),
-                  xaxis_tickformat = '<br>'.join(['%s' % i for i in top_5_products_by_profit.index.str.wrap(20)])) # Modified to wrap in 2 lines
+                  xaxis_tickformat = '<br>'.join(['%s' % i for i in top_5_products_by_profit.index.str.wrap(20)])) # Apply wrapping to profit chart
 
 st.plotly_chart(fig_profit)
