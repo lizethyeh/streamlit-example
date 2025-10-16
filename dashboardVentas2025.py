@@ -19,7 +19,10 @@ fig_sales = px.bar(top_5_products,
                    y=top_5_products.values,
                    title='Top 5 Selling Products by Sales',
                    labels={'x': 'Product Name', 'y': 'Total Sales'})
-fig_sales.update_layout(xaxis_tickangle=-45)
+fig_sales.update_layout(xaxis = dict(tickangle = -45,
+                                tickfont = dict(size=10),
+                                automargin=True),
+                  xaxis_tickformat = '<br>'.join(['%s' % i for i in top_5_products.index.str.wrap(20)])) # Modified to wrap in 2 lines
 
 st.plotly_chart(fig_sales)
 
