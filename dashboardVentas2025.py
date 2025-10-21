@@ -31,9 +31,16 @@ st.sidebar.header('Filter by Region and State')
 regions = ['Todas'] + list(df_order_central['Region'].unique())
 selected_region = st.sidebar.selectbox('Select a Region', regions)
 
+# Filter data based on selected region
+if selected_region == 'Todas':
+    filtered_df_region = df_order_central
+else:
+    filtered_df_region = df_order_central[df_order_central['Region'] == selected_region]
+
 # State filter
 states = ['Todos'] + list(filtered_df_region['State'].unique())
 selected_state = st.sidebar.selectbox('Select a State', states)
+
 
 # Date range filter
 st.sidebar.header('Filter by Order Date Range')
@@ -41,11 +48,6 @@ min_date = df_order_central['Order Date'].min().date()
 max_date = df_order_central['Order Date'].max().date()
 selected_date_range = st.sidebar.date_input('Select Date Range', value=(min_date, max_date), min_value=min_date, max_value=max_date)
 
-# Filter data based on selected region and state
-if selected_region == 'Todas':
-    filtered_df_region = df_order_central
-else:
-    filtered_df_region = df_order_central[df_order_central['Region'] == selected_region]
 
 # Filter data based on selected state
 if selected_state == 'Todos':
