@@ -6,7 +6,7 @@ import textwrap
 st.title('Product Sales and Profit Analysis by Region and State')
 
 # Leer archivo Excel
-excel_file_path = 'Order Central Limpio ENTREGABLE.xlsx'
+excel_file_path = '/content/drive/MyDrive/Herramientas Datos/Order Central Limpio ENTREGABLE.xlsx'
 df_order_central = pd.read_excel(excel_file_path)
 
 # Convert date columns to datetime
@@ -31,21 +31,34 @@ st.sidebar.header('Filter by Region and State')
 regions = ['Todas'] + list(df_order_central['Region'].unique())
 selected_region = st.sidebar.selectbox('Select a Region', regions)
 
-# Filter data based on selected region
+# State filter
+states = ['Todos'] + list(filtered_df_region['State'].unique())
+selected_state = st.sidebar.selectbox('Select a State', states)
+
+# Date range filter
+st.sidebar.header('Filter by Order Date Range')
+min_date = df_order_central['Order Date'].min().date()
+max_date = df_order_central['Order Date'].max().date()
+selected_date_range = st.sidebar.date_input('Select Date Range', value=(min_date, max_date), min_value=min_date, max_value=max_date)
+
+# Filter data based on selected region and state
 if selected_region == 'Todas':
     filtered_df_region = df_order_central
 else:
     filtered_df_region = df_order_central[df_order_central['Region'] == selected_region]
-
-# State filter
-states = ['Todos'] + list(filtered_df_region['State'].unique())
-selected_state = st.sidebar.selectbox('Select a State', states)
 
 # Filter data based on selected state
 if selected_state == 'Todos':
     filtered_df = filtered_df_region
 else:
     filtered_df = filtered_df_region[filtered_df_region['State'] == selected_state]
+
+# Filter data based on selected date range
+if len(selected_date_range) == 2:
+    start_date = pd.Timestamp(selected_date_range[0])
+    end_date = pd.Timestamp(selected_date_range[1])
+    filtered_df = filtered_df[(filtered_df['Order Date'] >= start_date) & (filtered_df['Order Date'] <= end_date)]
+
 
 # Checkbox to show/hide DataFrame
 show_dataframe = st.sidebar.checkbox('Show Filtered Data')
