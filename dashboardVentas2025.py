@@ -46,7 +46,8 @@ selected_state = st.sidebar.selectbox('Select a State', states)
 st.sidebar.header('Filter by Order Date Range')
 min_date = df_order_central['Order Date'].min().date()
 max_date = df_order_central['Order Date'].max().date()
-selected_date_range = st.sidebar.date_input('Select Date Range', value=(min_date, max_date), min_value=min_date, max_value=max_date)
+start_date = st.sidebar.date_input('Start Date', value=min_date, min_value=min_date, max_value=max_date)
+end_date = st.sidebar.date_input('End Date', value=max_date, min_value=min_date, max_value=max_date)
 
 
 # Filter data based on selected state
@@ -56,10 +57,9 @@ else:
     filtered_df = filtered_df_region[filtered_df_region['State'] == selected_state]
 
 # Filter data based on selected date range
-if len(selected_date_range) == 2:
-    start_date = pd.Timestamp(selected_date_range[0])
-    end_date = pd.Timestamp(selected_date_range[1])
-    filtered_df = filtered_df[(filtered_df['Order Date'] >= start_date) & (filtered_df['Order Date'] <= end_date)]
+start_date = pd.Timestamp(start_date)
+end_date = pd.Timestamp(end_date)
+filtered_df = filtered_df[(filtered_df['Order Date'] >= start_date) & (filtered_df['Order Date'] <= end_date)]
 
 
 # Checkbox to show/hide DataFrame
