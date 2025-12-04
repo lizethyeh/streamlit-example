@@ -2,238 +2,104 @@ import streamlit as st
 import pandas as pd
 import geopandas as gpd
 import pydeck as pdk
-import plotly.express as px
-import json
-import numpy as np
-import unicodedata
 import zipfile
-import io
+import numpy as np
 
+st.title("Mapa Choropleth de Incidentes en Yucatán (2015–2025)")
 
-def normalize_municipio_name(name):
-    name = str(name).lower()
-    name = name.strip()
-    name = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('utf-8')
-    return name
+# =========================
+# RUTAS DE TUS ARCHIVOS
+# =========================
+CSV_ZIP_PATH = "data/dataframe_limpio_2015_2025.zip"
+GEOJSON_PATH = "data/Yucatan.geojson"
 
+# =========================
+# CARGA DEL CSV DESDE ZIP
+# =========================
+st.write("Cargando base de datos...")
 
-@st.cache_data
-def load_and_preprocess_data(uploaded_zip, uploaded_geojson):
+with zipfile.ZipFile(CSV_ZIP_PATH, 'r') as z:
+    z.extractall("data/tmp")
+    extracted_files = z.namelist()
 
-    # ------------------------------
-    # 1. DESCOMPRIMIR ZIP DE DATOS
-    # ------------------------------
-    with zipfile.ZipFile(uploaded_zip, "r") as z:
-        file_list = z.namelist()
+# Identifica automáticamente el CSV dentro del ZIP
+csv_inside_zip = [f for f in extracted_files if f.endswith(".csv")][0]
 
-        # Buscar el primer CSV automáticamente
-        csv_files = [f for f in file_list if f.endswith(".csv")]
+# Carga del CSV
+df = pd.read_csv(f"data/tmp/{csv_inside_zip}", encoding="utf-8")
 
-        if len(csv_files) == 0:
-            st.error("El archivo ZIP no contiene ningún CSV.")
-            return None
+st.write("Datos cargados:", df.head())
 
-        # Leer el CSV del ZIP
-        with z.open(csv_files[0]) as f:
-            df = pd.read_csv(f, encoding="latin1")
+# =========================
+# CARGA DEL GEOJSON
+# =========================
+gdf = gpd.read_file(GEOJSON_PATH)
 
-    # ------------------------------
-    # 2. LEER GEOJSON SUBIDO
-    # ------------------------------
-    gdf_yucatan = gpd.read_file(uploaded_geojson)
+# Asegurar nombres de columnas iguales
+df["Municipio"] = df["Municipio"].str.upper()
+gdf["name"] = gdf["name"].str.upper()
 
-    # ------------------------------
-    # 3. PROCESAR DATOS
-    # ------------------------------
-    month_columns = [
-        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ]
+# =========================
+# SUMA DE INCIDENTES POR MES
+# =========================
+meses = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+]
 
-    for col in month_columns:
-        if col in df.columns:
-            df[col] = df[col].fillna(0).astype('int64')
+df["TotalIncidentes"] = df[meses].sum(axis=1)
 
-    # Filtrar Yucatán
-    df_yucatan = df[df['Entidad'] == 'Yucatán']
+# =========================
+# AGRUPAR INCIDENTES POR MUNICIPIO
+# =========================
+df_grouped = df.groupby("Municipio")["TotalIncidentes"].sum().reset_index()
 
-    # Melt
-    id_vars = [col for col in df_yucatan.columns if col not in month_columns]
+# =========================
+# HACER MERGE GEOESPACIAL
+# =========================
+merged_gdf = gdf.merge(df_grouped, left_on="name", right_on="Municipio", how="left")
 
-    df_yucatan = pd.melt(
-        df_yucatan,
-        id_vars=id_vars,
-        value_vars=month_columns,
-        var_name='Month',
-        value_name='Incidents'
-    )
+# Rellenar NaN con 0
+merged_gdf["TotalIncidentes"] = merged_gdf["TotalIncidentes"].fillna(0)
 
-    df_yucatan['Municipio'] = df_yucatan['Municipio'].apply(normalize_municipio_name)
+# =========================
+# ESCALA LOGARÍTMICA
+# =========================
+merged_gdf["log_incidentes"] = np.log1p(merged_gdf["TotalIncidentes"])
 
-    # GeoJSON
-    gdf_yucatan['NOMGEO'] = gdf_yucatan['NOMGEO'].apply(normalize_municipio_name)
-    gdf_yucatan = gdf_yucatan.rename(columns={'NOMGEO': 'Municipio'})
+# =========================
+# PREPARAR GEOJSON PARA PYDECK
+# =========================
+geojson_dict = merged_gdf.__geo_interface__
 
-    # ------------------------------
-    # 4. UNIFICAR GEOJSON + DATOS
-    # ------------------------------
-    merged_gdf = gdf_yucatan.merge(df_yucatan, on="Municipio", how="left")
+# =========================
+# CONFIGURAR MAPA PYDECK
+# =========================
+layer = pdk.Layer(
+    "GeoJsonLayer",
+    geojson_dict,
+    opacity=0.7,
+    stroked=True,
+    filled=True,
+    get_fill_color="[(log_incidentes * 40), 0, 150, 180]",
+    get_line_color=[255, 255, 255],
+    pickable=True,
+)
 
-    return merged_gdf
+view_state = pdk.ViewState(
+    latitude=20.97,  # centro Yucatán
+    longitude=-89.62,
+    zoom=7
+)
 
+r = pdk.Deck(
+    layers=[layer],
+    initial_view_state=view_state,
+    tooltip={
+        "text": "Municipio: {name}\nIncidentes: {TotalIncidentes}"
+    }
+)
 
-def get_aggregated_data(merged_gdf, year,
-                        bien_juridico_afectado=None,
-                        tipo_de_delito=None,
-                        subtipo_de_delito=None):
+st.pydeck_chart(r)
 
-    if year is not None:
-        filtered_df = merged_gdf[merged_gdf["Año"] == year]
-    else:
-        filtered_df = merged_gdf
-
-    if bien_juridico_afectado:
-        filtered_df = filtered_df[
-            filtered_df["Bien jurídico afectado"] == bien_juridico_afectado
-        ]
-    if tipo_de_delito:
-        filtered_df = filtered_df[
-            filtered_df["Tipo de delito"] == tipo_de_delito
-        ]
-    if subtipo_de_delito:
-        filtered_df = filtered_df[
-            filtered_df["Subtipo de delito"] == subtipo_de_delito
-        ]
-
-    unique_geometries = merged_gdf[["Municipio", "geometry"]].drop_duplicates()
-    aggregated_incidents = (
-        filtered_df.groupby("Municipio")["Incidents"].sum().reset_index()
-    )
-
-    aggregated_gdf = unique_geometries.merge(
-        aggregated_incidents, on="Municipio", how="left"
-    )
-    aggregated_gdf["Incidents"] = aggregated_gdf["Incidents"].fillna(0).astype(int)
-    return aggregated_gdf
-
-
-def get_incident_color(incidents, min_incidents, max_incidents):
-    alpha = 200
-
-    if incidents == 0:
-        return [240, 240, 240, alpha]
-
-    log_incidents = np.log1p(incidents)
-
-    if max_incidents == min_incidents:
-        return [150, 75, 75, alpha]
-
-    max_log = np.log1p(max_incidents)
-    min_log = np.log1p(min_incidents)
-
-    normalized = (log_incidents - min_log) / (max_log - min_log)
-
-    r = int(255 * normalized)
-    g = int(max(0, 255 * (1 - normalized) - 50))
-    b = int(max(0, 255 * (1 - normalized) - 50))
-
-    return [r, g, b, alpha]
-
-
-def main():
-
-    st.title("Análisis de Incidentes en Yucatán")
-
-    st.write("Sube los archivos necesarios para comenzar:")
-
-    uploaded_geojson = st.file_uploader("Sube el archivo GEOJSON", type=["geojson"])
-    uploaded_zip = st.file_uploader("Sube el archivo ZIP con datos CSV", type=["zip"])
-
-    if not uploaded_geojson or not uploaded_zip:
-        st.info("Esperando archivos...")
-        st.stop()
-
-    # Cargar y unir datos
-    merged_gdf = load_and_preprocess_data(uploaded_zip, uploaded_geojson)
-
-    if merged_gdf is None:
-        st.error("No se pudo procesar la información.")
-        st.stop()
-
-    st.success("Datos cargados correctamente.")
-
-    # =============================
-    #   FILTROS EN SIDEBAR
-    # =============================
-    st.sidebar.header("Filtros")
-
-    years = ["Todos los años"] + sorted(merged_gdf["Año"].dropna().unique().tolist())
-    selected_year = st.sidebar.selectbox("Año", years)
-    selected_year = None if selected_year == "Todos los años" else selected_year
-
-    all_municipalities = sorted(merged_gdf["Municipio"].dropna().unique().tolist())
-    selected_municipalities = st.sidebar.multiselect(
-        "Municipios",
-        all_municipalities,
-        default=all_municipalities
-    )
-
-    # =============================
-    #   MAPA
-    # =============================
-    st.subheader("Mapa de Incidentes")
-
-    filtered_gdf = merged_gdf[merged_gdf["Municipio"].isin(selected_municipalities)]
-    aggregated = get_aggregated_data(filtered_gdf, selected_year)
-
-    min_inc = aggregated["Incidents"].min()
-    max_inc = aggregated["Incidents"].max()
-
-    aggregated["color"] = aggregated["Incidents"].apply(
-        lambda x: get_incident_color(x, min_inc, max_inc)
-    )
-
-    geojson_data = json.loads(aggregated.to_json())
-
-    layer = pdk.Layer(
-        "GeoJsonLayer",
-        geojson_data,
-        get_fill_color="properties.color",
-        pickable=True,
-        auto_highlight=True,
-    )
-
-    view_state = pdk.ViewState(
-        latitude=20.97,
-        longitude=-89.62,
-        zoom=7,
-    )
-
-    deck = pdk.Deck(
-        layers=[layer],
-        initial_view_state=view_state
-    )
-
-    st.pydeck_chart(deck)
-
-    # =============================
-    #   TENDENCIAS
-    # =============================
-    st.subheader("Tendencias por Municipio")
-    df_trend = (
-        filtered_gdf.groupby(["Año", "Municipio"])["Incidents"]
-        .sum().reset_index()
-    )
-
-    fig = px.line(
-        df_trend,
-        x="Año",
-        y="Incidents",
-        color="Municipio",
-        title="Tendencia de Incidentes"
-    )
-    st.plotly_chart(fig)
-
-
-if __name__ == "__main__":
-    main()
+st.success("Mapa generado correctamente")
