@@ -11,7 +11,7 @@ url_geojson = "https://raw.githubusercontent.com/lizethyeh/streamlit-example/mas
 geojson = requests.get(url_geojson).json()
 
 # Cargar tu dataframe de delitos
-df = pd.read_excel("delitos.xlsx")
+df = pd.read_excel("dataframe limpio 2015 - 2025.zip")
 
 # Asegura la columna con total:
 df["Total"] = df[["Enero","Febrero","Marzo","Abril","Mayo","Junio",
