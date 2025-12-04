@@ -3,3 +3,11 @@ pandas
 streamlit
 plotly
 openpyxl
+numpy
+pydeck
+geopandas
+shapely==2.0.2
+fiona
+pyproj
+rtree
+unidecode
