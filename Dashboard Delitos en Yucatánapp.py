@@ -1,18 +1,18 @@
 import streamlit as st
 import pandas as pd
+import geopandas as gpd
 import pydeck as pdk
-import requests
-import zipfile
-import io
+import plotly.express as px
 import json
+import numpy as np
+import unicodedata
+import zipfile
+import requests
+from io import BytesIO
 
-# ----------------------------
-# CONFIGURACIÓN
-# ----------------------------
-
-GEOJSON_URL = "https://github.com/lizethyeh/streamlit-example/blob/master/Yucatan.geojson"
+# URLs de GitHub (usar raw.githubusercontent.com siempre)
+GEOJSON_URL = "https://raw.githubusercontent.com/lizethyeh/streamlit-example/master/Yucatan.geojson"
 ZIP_URL = "https://raw.githubusercontent.com/lizethyeh/streamlit-example/master/dataframe%20limpio%202015%20-%202025.zip"
-"
 CSV_NAME_INSIDE_ZIP = "dataframe_limpio_2015_2025.csv"   # <-- cambia si tu CSV tiene otro nombre
 
 st.title("Mapa de Incidentes Yucatán 2015–2025")
