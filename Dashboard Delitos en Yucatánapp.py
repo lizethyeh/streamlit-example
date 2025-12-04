@@ -11,7 +11,8 @@ import json
 # ----------------------------
 
 GEOJSON_URL = "https://github.com/lizethyeh/streamlit-example/blob/master/Yucatan.geojson"
-ZIP_URL = "https://github.com/lizethyeh/streamlit-example/blob/master/dataframe%20limpio%202015%20-%202025.zip"
+ZIP_URL = "https://raw.githubusercontent.com/lizethyeh/streamlit-example/master/dataframe%20limpio%202015%20-%202025.zip
+"
 CSV_NAME_INSIDE_ZIP = "dataframe_limpio_2015_2025.csv"   # <-- cambia si tu CSV tiene otro nombre
 
 st.title("Mapa de Incidentes Yucatán 2015–2025")
