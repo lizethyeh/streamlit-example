@@ -24,7 +24,7 @@ except FileNotFoundError:
 
 # Load Coordenadas_Json (GeoJSON for map)
 try:
-    with open('/content/drive/MyDrive/Herramientas Datos/Yucatan.geojson', 'r', encoding='utf-8') as f:
+    with open('Yucatan.geojson', 'r', encoding='utf-8') as f:
         Coordenadas_Json = json.load(f)
 except FileNotFoundError:
     st.error("Error: 'Yucatan.geojson' not found. Please ensure the file is in the correct path.")
