@@ -14,7 +14,7 @@ import unicodedata
 # and load it from the Colab Drive path.
 # If running locally, ensure 'delitos_final.csv' is in the same directory or provide full path.
 try:
-    delitos_final = pd.read_csv('delitos_final.csv')
+    delitos_final = pd.read_csv('/content/drive/MyDrive/delitos_final.csv')
     # Ensure 'Año' is int for filtering
     delitos_final['Año'] = delitos_final['Año'].astype(int)
 except FileNotFoundError:
@@ -24,7 +24,7 @@ except FileNotFoundError:
 
 # Load Coordenadas_Json (GeoJSON for map)
 try:
-    with open('Yucatan.geojson', 'r', encoding='utf-8') as f:
+    with open('/content/drive/MyDrive/Herramientas Datos/Yucatan.geojson', 'r', encoding='utf-8') as f:
         Coordenadas_Json = json.load(f)
 except FileNotFoundError:
     st.error("Error: 'Yucatan.geojson' not found. Please ensure the file is in the correct path.")
