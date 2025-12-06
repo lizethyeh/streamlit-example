@@ -341,8 +341,11 @@ else:
             map_style="mapbox://styles/mapbox/light-v9",
             initial_view_state=view_state,
             layers=[geojson_layer],
-            tooltip={"html": "<b>Municipio:</b> {properties.NOMGEO}<br/><b>Total de Incidentes:</b> {properties.Total_Incidentes}"}
-        ))
+            tooltip=tooltip={
+        "html": "<b>Municipio:</b> {properties.municipio_nombre}<br/>"
+                "<b>Total de Incidentes:</b> {properties.incidentes_total}"
+    }
+))
     else:
         st.info("No hay datos para mostrar en el mapa con los filtros seleccionados.")
 
