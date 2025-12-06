@@ -342,8 +342,8 @@ else:
     initial_view_state=view_state,
     layers=[geojson_layer],
     tooltip={
-        "html": "<b>Municipio:</b> {municipio_nombre}<br/>"
-                "<b>Total de Incidentes:</b> {incidentes_total}"
+        "html": "<b>Municipio:</b> {NOMGEO}<br/>"
+                "<b>Total de Incidentes:</b> {Total_Incidentes}"
     }
 ))
 
