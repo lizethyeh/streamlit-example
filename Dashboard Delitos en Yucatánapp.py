@@ -361,7 +361,7 @@ else:
         df=delitos_final, # Use original delitos_final and pass filters to function
         min_year=min_selected_year,
         max_year=max_selected_year,
-        municipalities=selected_municipalities
+        municipios_filter_list=selected_municipalities
     )
     if trend_chart_fig:
         st.plotly_chart(trend_chart_fig, use_container_width=True)
